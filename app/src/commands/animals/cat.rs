@@ -28,7 +28,7 @@ async fn cat(context: &Context, msg: &Message, mut args: Args) -> CommandResult 
         resp = get_cat(String::from("search"));
     }
 
-    let cat = resp.unwrap();
+    let cat = resp.await.unwrap();
 
     let response = MessageBuilder::new()
         .push_bold_safe(&msg.author)
@@ -36,27 +36,27 @@ async fn cat(context: &Context, msg: &Message, mut args: Args) -> CommandResult 
         .push(cat.url)
         .build();
 
-    if let Err(why) = msg.channel_id.say(&context.http, &response) {
+    if let Err(why) = msg.channel_id.say(&context.http, &response).await {
         error!("Error sending message: {:?}", why);
     }
 
     Ok(())
 }
 
-fn get_cat(id: std::string::String) -> Result<models::Cat, reqwest::Error> {
+async fn get_cat(id: std::string::String) -> Result<models::Cat, reqwest::Error> {
 
     let baseurl = "https://api.thecatapi.com/v1/images/";
-    let mut callurl;
-    let mut resp;
+    let callurl;
+    let resp;
 
     if !id.eq("search") {
         callurl = format!("{}{}", baseurl, id);
-        let root : models::Cat = reqwest::get(callurl.as_str())?.json()?;
+        let root : models::Cat = reqwest::get(callurl.as_str()).await?.json().await?;
         resp = root;
         debug!("{:#?}", resp);
     } else {
         callurl = format!("{}{}", baseurl, id);
-        let root : models::RootCat = reqwest::get(callurl.as_str())?.json()?;
+        let root : models::RootCat = reqwest::get(callurl.as_str()).await?.json().await?;
         resp = root.cat;
         debug!("{:#?}", resp);
     }

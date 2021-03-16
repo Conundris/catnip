@@ -25,7 +25,7 @@ async fn roll20(context: &Context, msg: &Message) -> CommandResult {
         .push_bold(rolled_value)
         .build();
 
-    if let Err(why) = msg.channel_id.say(&context.http, &response) {
+    if let Err(why) = msg.channel_id.say(&context.http, &response).await {
         error!("Error sending message: {:?}", why);
     }
 

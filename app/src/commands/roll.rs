@@ -18,10 +18,10 @@ async fn roll(context: &Context, msg: &Message) -> CommandResult {
 
     let dice = match parse_roll(msg) {
         Ok(value) => value,
-        Err(_) => return Err(CommandError(
-            format!("Couldn't parse this message as dice: {:?}", msg.content)
-            .to_string()
-        )),
+        Err(_) => {
+            error!("Error sending message: {:?}", msg.content);
+            return Ok(())
+        }
     };
 
     let mut rolled_value: u32 = 0;
@@ -35,7 +35,7 @@ async fn roll(context: &Context, msg: &Message) -> CommandResult {
         .push_bold(rolled_value)
         .build();
 
-    if let Err(why) = msg.channel_id.say(&context.http, &response) {
+    if let Err(why) = msg.channel_id.say(&context.http, &response).await {
         error!("Error sending message: {:?}", why);
     }
 

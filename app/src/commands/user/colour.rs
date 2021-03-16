@@ -32,27 +32,33 @@ async fn colour(ctx: &Context, msg: &Message) -> CommandResult {
         None => {
             let txt = "we couldn't find which guild this came from. Sorry!";
             respond(ctx, msg, txt);
-            return Err(CommandError(String::from(txt)))
+            //return Err(CommandError(String::from(txt)))
+            error!("{}", String::from(txt));
+            return Ok(())
         },
         Some(guild) => {
-            let p_guild = match guild.to_partial_guild(&ctx.http) {
+            let p_guild = match guild.to_partial_guild(&ctx.http).await {
                 Ok(p_guild) => p_guild,
                 Err(_) => {
                     let txt = "something went wrong when fetching guild info. Sorry!";
                     respond(ctx, msg, txt);
-                    return Err(CommandError(String::from(txt)))
+                    //return Err(CommandError(String::from(txt)))
+                    error!("{}", String::from(txt));
+                    return Ok(())
                 }
             };
             p_guild
         }
     };
 
-    let mut member = match p_guild.member(&ctx, &msg.author) {
+    let mut member = match p_guild.member(&ctx, &msg.author).await {
         Ok(member) => member,
         Err(_) => {
             let txt = "I can't find you in the guild. Sorry!";
             respond(ctx, msg, txt);
-            return Err(CommandError(String::from(txt)))
+            //return Err(CommandError(String::from(txt)))
+            error!("{}", String::from(txt));
+            return Ok(())
         }
     };
 
@@ -61,11 +67,13 @@ async fn colour(ctx: &Context, msg: &Message) -> CommandResult {
         None => {
             let txt = colour + " isn't available. Sorry!";
             respond(ctx, msg, &txt);
-            return Err(CommandError(String::from(txt)))
+            //return Err(CommandError(String::from(txt)))
+            error!("{}", String::from(txt));
+            return Ok(())
         }
     };
 
-    let removals: Vec<RoleId> = match member.roles(&ctx.cache) {
+    let removals: Vec<RoleId> = match member.roles(&ctx.cache).await {
         None => Vec::new(),
         Some(roles) => {
             roles.iter()
@@ -76,15 +84,17 @@ async fn colour(ctx: &Context, msg: &Message) -> CommandResult {
     };
 
     if removals.len() > 0 {
-        if let Err(why) = member.remove_roles(&ctx.http, &removals) {
+        if let Err(why) = member.remove_roles(&ctx.http, &removals).await {
             error!("Error removing roles: {:?}", why);
             let txt = "we couldn't remove your old colours. Sorry!";
             respond(ctx, msg, txt);
-            return Err(CommandError(String::from(txt)))
+            //return Err(CommandError(String::from(txt)))
+            error!("{}", String::from(txt));
+            return Ok(())
         };
     }
 
-    match member.add_role(&ctx.http, role_id) {
+    match member.add_role(&ctx.http, role_id).await {
         Ok(_) => {
             let txt = "your colour has been updated!";
             respond(ctx, msg, txt);
@@ -94,20 +104,22 @@ async fn colour(ctx: &Context, msg: &Message) -> CommandResult {
         Err(_) => {
             let txt = "we couldn't give you this colour. Sorry!";
             respond(ctx, msg, txt);
-            return Err(CommandError(String::from(txt)))
+            //return Err(CommandError(String::from(txt)))
+            error!("{}", String::from(txt));
+            return Ok(())
         }
     }
 }
 
 // Sends a response to a user's message
-fn respond(ctx: &Context, msg: &Message, txt: &str) {
+async fn respond(ctx: &Context, msg: &Message, txt: &str) {
     let response = MessageBuilder::new()
         .push_bold_safe(&msg.author)
         .push(", ")
         .push(txt)
         .build();
 
-    if let Err(why) = msg.channel_id.say(&ctx.http, &response) {
+    if let Err(why) = msg.channel_id.say(&ctx.http, &response).await {
         error!("Error sending message: {:?}", why);
     }
 }

@@ -22,7 +22,7 @@ async fn title(ctx: &Context, msg: &Message) -> CommandResult {
     let args: Vec<&str> = msg.content.split(' ').collect();
 
     match args.get(1) {
-        None => handle_get_title(ctx, msg),
+        None => handle_get_title(ctx, msg).await,
         Some(&"set") => {
             match args.get(2..args.len()) {
                 None => {
@@ -31,7 +31,7 @@ async fn title(ctx: &Context, msg: &Message) -> CommandResult {
                         .push(", Usage: `!title set The Fabulous`")
                         .build();
 
-                    if let Err(why) = msg.channel_id.say(&ctx.http, &response) {
+                    if let Err(why) = msg.channel_id.say(&ctx.http, &response).await {
                         error!("Error sending message: {:?}", why);
                     }
 
@@ -46,7 +46,7 @@ async fn title(ctx: &Context, msg: &Message) -> CommandResult {
                             .push(", custom Emojis are not allowed in titles")
                             .build();
 
-                        if let Err(why) = msg.channel_id.say(&ctx.http, &response) {
+                        if let Err(why) = msg.channel_id.say(&ctx.http, &response).await {
                             error!("Error sending message: {:?}", why);
                         }
 
@@ -55,11 +55,11 @@ async fn title(ctx: &Context, msg: &Message) -> CommandResult {
                     }
 
                     let new_title = title_args.join(" ");
-                    handle_set_title(ctx, msg, Some(new_title))
+                    handle_set_title(ctx, msg, Some(new_title)).await
                 },
             }
         },
-        Some(&"clear") => handle_set_title(ctx, msg, None),
+        Some(&"clear") => handle_set_title(ctx, msg, None).await,
         Some(_) => {
             // Unrecognised argument
             let response = MessageBuilder::new()
@@ -68,7 +68,7 @@ async fn title(ctx: &Context, msg: &Message) -> CommandResult {
                 .push("use `!title`, `!title set ...` or `!title clear`.")
                 .build();
 
-            if let Err(why) = msg.channel_id.say(&ctx.http, &response) {
+            if let Err(why) = msg.channel_id.say(&ctx.http, &response).await {
                 error!("Error sending message: {:?}", why);
             }
             // User error
@@ -77,7 +77,7 @@ async fn title(ctx: &Context, msg: &Message) -> CommandResult {
     }
 }
 
-fn handle_get_title(
+async fn handle_get_title(
     ctx: &Context,
     msg: &Message,
 ) -> CommandResult
@@ -92,7 +92,8 @@ fn handle_get_title(
             Err(_) => {
                 let reason = String::from("Could not retrieve user data from database");
                 error!("{}", reason);
-                return Err(CommandError(reason))
+                //return Err(CommandError(reason))
+                return Ok(())
             },
             Ok(data) => data,
         };
@@ -110,14 +111,14 @@ fn handle_get_title(
             .build(),
     };
 
-    if let Err(why) = msg.channel_id.say(&ctx.http, &response) {
+    if let Err(why) = msg.channel_id.say(&ctx.http, &response).await {
         error!("Error sending message: {:?}", why);
     }
 
     Ok(())
 }
 
-fn handle_set_title(
+async fn handle_set_title(
     ctx: &Context,
     msg: &Message,
     title: Option<String>
@@ -135,7 +136,7 @@ fn handle_set_title(
                     .push_bold_safe(&msg.author)
                     .push(", sorry, that didn't work. Try a different title!")
                     .build();
-                if let Err(why) = msg.channel_id.say(&ctx.http, &response) {
+                if let Err(why) = msg.channel_id.say(&ctx.http, &response).await {
                     error!("Error sending message: {:?}", why);
                 }
                 // User error
@@ -147,7 +148,7 @@ fn handle_set_title(
                     .push_bold_safe(&msg.author)
                     .push(", please choose a shorter title!")
                     .build();
-                if let Err(why) = msg.channel_id.say(&ctx.http, &response) {
+                if let Err(why) = msg.channel_id.say(&ctx.http, &response).await {
                     error!("Error sending message: {:?}", why);
                 }
                 // User error
@@ -168,7 +169,8 @@ fn handle_set_title(
             Err(_) => {
                 let reason = String::from("Could not retrieve user data from database");
                 error!("{}", reason);
-                return Err(CommandError(reason))
+                //return Err(CommandError(reason))
+                return Ok(())
             },
             Ok(data) => data,
         };
@@ -182,7 +184,8 @@ fn handle_set_title(
     ) {
         let reason = String::from("Could update user data in database");
         error!("{}", reason);
-        return Err(CommandError(reason))
+        //return Err(CommandError(reason))
+        return Ok(())
     }
     debug!("Updated user title in database to '{:?}'", user.title);
 
@@ -199,7 +202,7 @@ fn handle_set_title(
             .build(),
     };
 
-    if let Err(why) = msg.channel_id.say(&ctx.http, &response) {
+    if let Err(why) = msg.channel_id.say(&ctx.http, &response).await {
         error!("Error sending message: {:?}", why);
     }
 

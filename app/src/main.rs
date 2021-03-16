@@ -198,26 +198,27 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                 .ignore_bots(true)
                 .case_insensitivity(true)
         })
-        .before(|_context, msg, command_name| {
-            debug!("Got command '{}' by user '{}'",
-                   command_name,
-                   msg.author.name);
-            true
-        })
-        .after(|_context, _msg, command_name, error| {
-            match error {
-                Ok(()) => debug!("Processed command '{}'", command_name),
-                Err(why) => error!("Command '{}' returned error {:?}", command_name, why),
-            }
-        })
-        //.prefix_only(prefix_only) // Maybe Use
-        .unrecognised_command(|_, _, unknown_command_name| {
-            debug!("Could not find command named '{}'", unknown_command_name);
-        })
-        // Code to execute when commands fail to dispatch
-        .on_dispatch_error(|_context, msg, error| {
-            debug!("Failed to dispatch `{}`: {:?}", msg.content, error);
-        })
+        // TODO: Change to Hook events
+        // .before(|_context, msg, command_name| {
+        //     debug!("Got command '{}' by user '{}'",
+        //            command_name,
+        //            msg.author.name);
+        //     Box::pin(true)
+        // })
+        // .after(|_context, _msg, command_name, error| {
+        //     match error {
+        //         Ok(()) => debug!("Processed command '{}'", command_name),
+        //         Err(why) => error!("Command '{}' returned error {:?}", command_name, why),
+        //     }
+        // })
+        // //.prefix_only(prefix_only) // Maybe Use
+        // .unrecognised_command(|_, _, unknown_command_name| {
+        //     debug!("Could not find command named '{}'", unknown_command_name);
+        // })
+        // // Code to execute when commands fail to dispatch
+        // .on_dispatch_error(|_context, msg, error| {
+        //     debug!("Failed to dispatch `{}`: {:?}", msg.content, error);
+        // })
         .group(&GENERAL_GROUP)
         .group(&ANIMALS_GROUP)
         .group(&USER_GROUP);
