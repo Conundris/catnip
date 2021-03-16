@@ -48,13 +48,6 @@ pub struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
-    async fn ready(&self, context: Context, ready: Ready) {
-        debug!("Callback ready: {:?}", ready);
-        let activity = Activity::playing("with your RNG tables");
-        context.set_activity(activity);
-        info!("{} is connected!", ready.user.name);
-    }
-
     async fn presence_replace(&self,
                         context: Context,
                         new_vec: Vec<Presence>)
@@ -69,6 +62,13 @@ impl EventHandler for Handler {
         debug!("Callback presence_update: {:?}", new.presence);
         // stream_notify::handler(context, new);
     }
+
+    async fn ready(&self, context: Context, ready: Ready) {
+        debug!("Callback ready: {:?}", ready);
+        let activity = Activity::playing("Stuff");
+        context.set_activity(activity);
+        info!("{} is connected!", ready.user.name);
+    }
 }
 
 #[group("General")]
@@ -78,40 +78,13 @@ struct General;
 
 #[group("Animals")]
 #[description = "Commands which are for getting pics of animals"]
-#[commands(roll20, roll)]
+#[commands(cat, dog)]
 struct Animals;
 
 #[group("User")]
 #[description = "Commands which are for the user"]
-#[commands(roll20, roll)]
+#[commands(title, colour)]
 struct User;
-
-// group!({
-//     name: "general",
-//     options: {},
-//     commands: [
-//         roll20,
-//         roll,
-//     ],
-// });
-
-// group!({
-//     name: "animals",
-//     options: {},
-//     commands: [
-//     cat,
-//     dog,
-//     ],
-// });
-//
-// group!({
-//     name: "user",
-//     options: {},
-//     commands: [
-//         title,
-//         colour,
-//     ],
-// });
 
 // #[help]
 // #[individual_command_tip =
@@ -221,14 +194,12 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         // })
         .group(&GENERAL_GROUP)
         .group(&ANIMALS_GROUP)
-        .group(&USER_GROUP);
-        //.help(&HELP);
+        .group(&USER_GROUP)
+        .help(&HELP);
 
     let mut client = ClientBuilder::new(&token)
         .event_handler(Handler)
-        //.intents(GatewayIntents::all())
         .framework(framework)
-        //.register_songbird()
         .await?;
 
     {
@@ -248,42 +219,4 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     }
 
     Ok(())
-
-    // client.with_framework(
-    //     StandardFramework::new()
-    //     .configure(|c| c
-    //         .with_whitespace(false)
-    //         .on_mention(Some(bot_id))
-    //         .prefix("!")
-    //         .delimiters(vec![", ", ","])
-    //         .owners(owners)
-    //     )
-    //     // Code to execute before a command execution
-    //     .before(|_context, msg, command_name| {
-    //         debug!("Got command '{}' by user '{}'",
-    //                  command_name,
-    //                  msg.author.name);
-    //         true
-    //     })
-    //     // Code to execute after a command execution
-    //     .after(|_context, _msg, command_name, error| {
-    //         match error {
-    //             Ok(()) => debug!("Processed command '{}'", command_name),
-    //             Err(why) => error!("Command '{}' returned error {:?}", command_name, why),
-    //         }
-    //     })
-    //     // Code to execute whenever an attempted command-call's
-    //     // command could not be found
-    //     .unrecognised_command(|_, _, unknown_command_name| {
-    //         debug!("Could not find command named '{}'", unknown_command_name);
-    //     })
-    //     // Code to execute when commands fail to dispatch
-    //     .on_dispatch_error(|_context, msg, error| {
-    //         debug!("Failed to dispatch `{}`: {:?}", msg.content, error);
-    //     })
-    //     .help(&MY_HELP)
-    //     .group(&GENERAL_GROUP)
-    //     .group(&ANIMALS_GROUP)
-    //     .group(&USER_GROUP)
-    // );
 }

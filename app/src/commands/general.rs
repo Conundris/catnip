@@ -1,12 +1,10 @@
 use rand::{Rng, thread_rng};
-
+use std::collections::HashSet;
 use serenity::{
     prelude::*,
-    model::prelude::*,
-    framework::standard::{
-        CommandResult,
-        macros::command,
-    },
+    client::Context,
+    framework::standard::{help_commands, macros::help, macros::command, Args, CommandGroup, CommandResult, HelpOptions},
+    model::prelude::{Message, UserId},
     utils::MessageBuilder,
 };
 
@@ -29,5 +27,25 @@ async fn roll20(context: &Context, msg: &Message) -> CommandResult {
         error!("Error sending message: {:?}", why);
     }
 
+    Ok(())
+}
+
+#[help]
+#[max_levenshtein_distance(3)]
+#[no_help_available_text(
+"**Error**: I was unable to find any information on this command, \
+    usually indicating that this command does not exist or does not have \
+    any help available for said command. Please try again later, or try \
+    searching for a different command instead."
+)]
+async fn help(
+    context: &Context,
+    message: &Message,
+    arguments: Args,
+    options: &'static HelpOptions,
+    command_groups: &[&'static CommandGroup],
+    bot_owners: HashSet<UserId>
+) -> CommandResult {
+    let _ = help_commands::plain(context, message, arguments, &options, command_groups, bot_owners).await;
     Ok(())
 }
